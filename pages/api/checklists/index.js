@@ -8,12 +8,14 @@ export default async function handler(req, res) {
   if (!isAdmin(req)) return res.status(401).json({ error: 'Unauthorized' })
 
   if (req.method === 'POST') {
-    const { title, slug, description, items } = req.body
-    if (!title || !slug || !items?.length) return res.status(400).json({ error: 'Champs manquants' })
+    const { type = 'checklist', title, slug, description, items, html_content } = req.body
+    if (!title || !slug) return res.status(400).json({ error: 'Champs manquants' })
+    if (type === 'checklist' && !items?.length) return res.status(400).json({ error: 'Ajoute au moins un item.' })
+    if (type === 'html' && !html_content) return res.status(400).json({ error: 'Contenu HTML manquant.' })
 
     const { data, error } = await supabaseAdmin
       .from('checklists')
-      .insert([{ title, slug, description, items }])
+      .insert([{ type, title, slug, description, items: items || [], html_content: html_content || null }])
       .select()
       .single()
 

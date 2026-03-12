@@ -42,6 +42,10 @@ export default function Admin({ checklists: initial, baseUrl }) {
                 className="px-4 py-2.5 rounded-xl border border-border text-muted text-sm hover:border-charcoal hover:text-charcoal transition-colors">
                 Déconnexion
               </button>
+              <Link href="/admin/upload"
+                className="px-5 py-2.5 rounded-xl border border-border text-charcoal text-sm font-medium hover:bg-charcoal hover:text-cream hover:border-charcoal transition-colors">
+                Upload HTML
+              </Link>
               <Link href="/admin/new"
                 className="px-5 py-2.5 rounded-xl bg-charcoal text-cream text-sm font-medium hover:bg-charcoal/80 transition-colors">
                 + Nouvelle
@@ -62,11 +66,19 @@ export default function Admin({ checklists: initial, baseUrl }) {
               return (
                 <div key={cl.id} className="bg-white border border-border rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-accent/30 transition-colors">
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-charcoal truncate">{cl.title}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-charcoal truncate">{cl.title}</p>
+                      <span className={`flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium
+                        ${cl.type === 'html' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                        {cl.type === 'html' ? 'HTML' : 'Checklist'}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs text-muted font-mono truncate">{url}</span>
-                      <span className="text-xs text-muted/40">·</span>
-                      <span className="text-xs text-muted flex-shrink-0">{cl.items?.length || 0} items</span>
+                      {cl.type === 'checklist' && <>
+                        <span className="text-xs text-muted/40">·</span>
+                        <span className="text-xs text-muted flex-shrink-0">{cl.items?.length || 0} items</span>
+                      </>}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">

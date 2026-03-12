@@ -2,29 +2,34 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import Head from 'next/head'
 
-export default function ChecklistPage({ checklist, notFound }) {
+// Page HTML plein écran
+function HtmlPage({ checklist }) {
+  return (
+    <>
+      <Head><title>{checklist.title}</title></Head>
+      <iframe
+        srcDoc={checklist.html_content}
+        style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+      />
+    </>
+  )
+}
+
+// Page checklist interactive
+function ChecklistPageView({ checklist }) {
   const [checked, setChecked] = useState({})
 
   useEffect(() => {
-    if (!checklist) return
     const saved = localStorage.getItem('cl-' + checklist.id)
     if (saved) setChecked(JSON.parse(saved))
-  }, [checklist])
+  }, [checklist.id])
 
   function toggle(i) {
     const next = { ...checked, [i]: !checked[i] }
     setChecked(next)
     localStorage.setItem('cl-' + checklist.id, JSON.stringify(next))
   }
-
-  if (notFound) return (
-    <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-6 text-center">
-      <p className="font-display text-3xl text-charcoal mb-2">Introuvable</p>
-      <p className="text-muted">Ce lien n'existe pas ou a expiré.</p>
-    </div>
-  )
-
-  if (!checklist) return null
 
   const items = checklist.items || []
   const doneCount = items.filter((_, i) => checked[i]).length
@@ -34,8 +39,6 @@ export default function ChecklistPage({ checklist, notFound }) {
     <>
       <Head><title>{checklist.title}</title></Head>
       <div className="min-h-screen bg-cream font-body">
-
-        {/* Top bar */}
         <div className="fixed top-0 left-0 right-0 z-10 bg-cream/90 backdrop-blur border-b border-border">
           <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
             <span className="text-xs uppercase tracking-widest text-muted">Checklist</span>
@@ -82,6 +85,20 @@ export default function ChecklistPage({ checklist, notFound }) {
       </div>
     </>
   )
+}
+
+export default function SlugPage({ checklist, notFound }) {
+  if (notFound) return (
+    <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-6 text-center">
+      <p className="font-display text-3xl text-charcoal mb-2">Introuvable</p>
+      <p className="text-muted">Ce lien n'existe pas ou a expiré.</p>
+    </div>
+  )
+
+  if (!checklist) return null
+
+  if (checklist.type === 'html') return <HtmlPage checklist={checklist} />
+  return <ChecklistPageView checklist={checklist} />
 }
 
 export async function getServerSideProps({ params }) {

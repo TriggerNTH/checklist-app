@@ -10,8 +10,10 @@ export default function EditChecklist({ checklist }) {
   const [slug, setSlug] = useState(checklist.slug)
   const [description, setDescription] = useState(checklist.description || '')
   const [items, setItems] = useState(checklist.items?.map(i => i.label || i) || [''])
+  const [newFile, setNewFile] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const isHtml = checklist.type === 'html'
 
   function addItem() { setItems([...items, '']) }
   function updateItem(i, val) { const n = [...items]; n[i] = val; setItems(n) }
@@ -34,11 +36,21 @@ export default function EditChecklist({ checklist }) {
     e.preventDefault()
     setSaving(true)
     setError('')
-    const cleanItems = items.filter(i => i.trim()).map(label => ({ label }))
+
+    const body = { title, slug, description }
+
+    if (isHtml) {
+      if (newFile) {
+        body.html_content = await newFile.text()
+      }
+    } else {
+      body.items = items.filter(i => i.trim()).map(label => ({ label }))
+    }
+
     const res = await fetch('/api/checklists/' + checklist.id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, slug, description, items: cleanItems }),
+      body: JSON.stringify(body),
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error || 'Erreur.'); setSaving(false); return }
@@ -55,6 +67,9 @@ export default function EditChecklist({ checklist }) {
               <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
             </Link>
             <h1 className="font-display text-3xl text-charcoal">Modifier</h1>
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${isHtml ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+              {isHtml ? 'HTML' : 'Checklist'}
+            </span>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -63,6 +78,7 @@ export default function EditChecklist({ checklist }) {
               <input type="text" value={title} onChange={e => setTitle(e.target.value)} required
                 className="w-full px-4 py-3 rounded-xl border border-border bg-white text-charcoal text-base focus:outline-none focus:border-accent transition-colors" />
             </div>
+
             <div>
               <label className="block text-xs uppercase tracking-widest text-muted mb-2">URL</label>
               <div className="flex">
@@ -71,30 +87,44 @@ export default function EditChecklist({ checklist }) {
                   className="flex-1 px-4 py-3 rounded-r-xl border border-border bg-white text-charcoal font-mono text-sm focus:outline-none focus:border-accent transition-colors" />
               </div>
             </div>
-            <div>
-              <label className="block text-xs uppercase tracking-widest text-muted mb-2">Description <span className="normal-case tracking-normal">(optionnel)</span></label>
-              <input type="text" value={description} onChange={e => setDescription(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-white text-charcoal text-base focus:outline-none focus:border-accent transition-colors" />
-            </div>
-            <div>
-              <label className="block text-xs uppercase tracking-widest text-muted mb-2">Items</label>
-              <div className="space-y-2">
-                {items.map((item, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="text-muted/40 text-sm w-5 text-right">{i + 1}</span>
-                    <input type="text" value={item} onChange={e => updateItem(i, e.target.value)} onKeyDown={e => handleKeyDown(e, i)}
-                      className="item-input flex-1 px-4 py-2.5 rounded-xl border border-border bg-white text-charcoal text-sm focus:outline-none focus:border-accent transition-colors" />
-                    {items.length > 1 && (
-                      <button type="button" onClick={() => removeItem(i)} className="text-muted/40 hover:text-red-400 transition-colors">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                      </button>
-                    )}
-                  </div>
-                ))}
+
+            {/* HTML : option re-upload */}
+            {isHtml && (
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-muted mb-2">Remplacer le fichier HTML <span className="normal-case tracking-normal">(optionnel)</span></label>
+                <label className={`flex items-center gap-3 p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all
+                  ${newFile ? 'border-green-300 bg-green-50' : 'border-border hover:border-accent/50'}`}>
+                  <input type="file" accept=".html" className="hidden" onChange={e => setNewFile(e.target.files[0])} />
+                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                  <span className="text-sm text-charcoal">{newFile ? newFile.name : 'Choisir un nouveau fichier .html'}</span>
+                </label>
               </div>
-              <button type="button" onClick={addItem} className="mt-3 text-sm text-muted hover:text-accent transition-colors">+ Ajouter un item</button>
-            </div>
+            )}
+
+            {/* Checklist : items */}
+            {!isHtml && (
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-muted mb-2">Items</label>
+                <div className="space-y-2">
+                  {items.map((item, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="text-muted/40 text-sm w-5 text-right">{i + 1}</span>
+                      <input type="text" value={item} onChange={e => updateItem(i, e.target.value)} onKeyDown={e => handleKeyDown(e, i)}
+                        className="item-input flex-1 px-4 py-2.5 rounded-xl border border-border bg-white text-charcoal text-sm focus:outline-none focus:border-accent transition-colors" />
+                      {items.length > 1 && (
+                        <button type="button" onClick={() => removeItem(i)} className="text-muted/40 hover:text-red-400 transition-colors">
+                          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button type="button" onClick={addItem} className="mt-3 text-sm text-muted hover:text-accent transition-colors">+ Ajouter un item</button>
+              </div>
+            )}
+
             {error && <p className="text-sm text-red-500">{error}</p>}
+
             <div className="flex gap-3 pt-2">
               <button type="submit" disabled={saving}
                 className="px-6 py-3 rounded-xl bg-charcoal text-cream text-sm font-medium hover:bg-charcoal/80 transition-colors disabled:opacity-50">

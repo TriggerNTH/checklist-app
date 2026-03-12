@@ -16,10 +16,14 @@ export default async function handler(req, res) {
   if (!isAdmin(req)) return res.status(401).json({ error: 'Unauthorized' })
 
   if (req.method === 'PATCH') {
-    const { title, slug, description, items } = req.body
+    const { title, slug, description, items, html_content } = req.body
+    const updateData = { title, slug, description, updated_at: new Date().toISOString() }
+    if (items !== undefined) updateData.items = items
+    if (html_content !== undefined) updateData.html_content = html_content
+
     const { data, error } = await supabaseAdmin
       .from('checklists')
-      .update({ title, slug, description, items, updated_at: new Date().toISOString() })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()
