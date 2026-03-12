@@ -1,3 +1,4 @@
+// v2
 import { supabaseAdmin } from '../../../lib/supabase'
 
 function isAdmin(req) {
