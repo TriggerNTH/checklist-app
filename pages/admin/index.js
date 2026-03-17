@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Head from 'next/head'
+import { supabaseAdmin } from '../../lib/supabase'
 
 // Modal pour inviter un créateur
 function InviteModal({ checklist, baseUrl, onClose }) {
@@ -355,8 +356,6 @@ export async function getServerSideProps({ req }) {
   if (session !== process.env.ADMIN_PASSWORD) {
     return { redirect: { destination: '/admin/login', permanent: false } }
   }
-  const { createClient } = require('@supabase/supabase-js')
-  const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
   const { data } = await supabaseAdmin.from('checklists').select('*').order('created_at', { ascending: false })
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
   return { props: { checklists: data || [], baseUrl } }
