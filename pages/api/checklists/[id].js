@@ -1,4 +1,3 @@
-// v2
 import { supabaseAdmin } from '../../../lib/supabase'
 
 function isAdmin(req) {
@@ -6,25 +5,40 @@ function isAdmin(req) {
 }
 
 export default async function handler(req, res) {
+  const { id } = req.query
+
+  if (req.method === 'GET') {
+    const { data, error } = await supabaseAdmin.from('checklists').select('*').eq('id', id).single()
+    if (error) return res.status(404).json(null)
+    return res.status(200).json(data)
+  }
+
   if (!isAdmin(req)) return res.status(401).json({ error: 'Unauthorized' })
 
-  if (req.method === 'POST') {
-    const { type = 'checklist', title, slug, description, items, html_content, owner } = req.body
-    if (!title || !slug) return res.status(400).json({ error: 'Champs manquants' })
-    if (type === 'checklist' && !items?.length) return res.status(400).json({ error: 'Ajoute au moins un item.' })
-    if (type === 'html' && !html_content) return res.status(400).json({ error: 'Contenu HTML manquant.' })
+  if (req.method === 'PATCH') {
+    const { title, slug, description, items, html_content, owner } = req.body
+    const updateData = { title, slug, description, updated_at: new Date().toISOString() }
+    if (items !== undefined) updateData.items = items
+    if (html_content !== undefined) updateData.html_content = html_content
+    if (owner !== undefined) updateData.owner = owner || null
 
     const { data, error } = await supabaseAdmin
       .from('checklists')
-      .insert([{ type, title, slug, description, items: items || [], html_content: html_content || null, owner: owner || null }])
+      .update(updateData)
+      .eq('id', id)
       .select()
       .single()
-
     if (error) {
       if (error.code === '23505') return res.status(400).json({ error: 'Ce slug est déjà utilisé.' })
       return res.status(500).json({ error: error.message })
     }
-    return res.status(201).json(data)
+    return res.status(200).json(data)
+  }
+
+  if (req.method === 'DELETE') {
+    const { error } = await supabaseAdmin.from('checklists').delete().eq('id', id)
+    if (error) return res.status(500).json({ error: error.message })
+    return res.status(200).json({ ok: true })
   }
 
   res.status(405).end()
