@@ -1,9 +1,15 @@
 import { supabaseAdmin } from '../../../lib/supabase'
+
 function isAdmin(req) {
   return req.cookies['admin_session'] === process.env.ADMIN_PASSWORD
 }
 
+function slugify(str) {
+  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
 export default async function handler(req, res) {
+
   // GET — liste des sessions pour une checklist (admin only)
   if (req.method === 'GET') {
     if (!isAdmin(req)) return res.status(401).json({ error: 'Unauthorized' })
@@ -18,7 +24,6 @@ export default async function handler(req, res) {
 
     if (error) return res.status(500).json({ error: error.message })
 
-    // Charger les checks pour chaque session
     const sessionIds = sessions.map(s => s.id)
     let checks = []
     if (sessionIds.length > 0) {
@@ -32,7 +37,7 @@ export default async function handler(req, res) {
     const sessionsWithProgress = sessions.map(s => {
       const sessionChecks = checks.filter(c => c.session_id === s.id)
       const checkedCount = sessionChecks.filter(c => c.is_checked).length
-      return { ...s, checks: sessionChecks, checkedCount }
+      return { ...s, checks: sessionChecks, checkedCount, checklist_slug: s.checklists?.slug }
     })
 
     return res.status(200).json(sessionsWithProgress)
@@ -44,12 +49,6 @@ export default async function handler(req, res) {
     const { checklist_id, creator_name } = req.body
     if (!checklist_id || !creator_name) return res.status(400).json({ error: 'Champs manquants' })
 
-    // Générer un slug propre depuis le nom
-    function slugify(str) {
-      return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-    }
-
-    // Gérer les doublons : jean, jean-2, jean-3...
     let baseSlug = slugify(creator_name)
     let creator_slug = baseSlug
     let attempt = 1
