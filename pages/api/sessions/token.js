@@ -1,6 +1,5 @@
+import { supabaseAdmin } from '../../../lib/supabase'
 export default async function handler(req, res) {
-  const { createClient } = require('@supabase/supabase-js')
-  const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
   const { token } = req.query
 
   // GET — récupérer une session par token (public)
