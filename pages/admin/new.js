@@ -12,6 +12,7 @@ export default function NewChecklist() {
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
   const [description, setDescription] = useState('')
+  const [owner, setOwner] = useState('')
   const [items, setItems] = useState([''])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -43,7 +44,7 @@ export default function NewChecklist() {
     const res = await fetch('/api/checklists', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, slug, description, items: cleanItems }),
+      body: JSON.stringify({ title, slug, description, items: cleanItems, owner }),
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error || 'Erreur.'); setLoading(false); return }
@@ -83,6 +84,13 @@ export default function NewChecklist() {
               <label className="block text-xs uppercase tracking-widest text-muted mb-2">Description <span className="normal-case tracking-normal">(optionnel)</span></label>
               <input type="text" value={description} onChange={e => setDescription(e.target.value)}
                 placeholder="Instructions..."
+                className="w-full px-4 py-3 rounded-xl border border-border bg-white text-charcoal text-base focus:outline-none focus:border-accent transition-colors placeholder:text-muted/40" />
+            </div>
+
+            <div>
+              <label className="block text-xs uppercase tracking-widest text-muted mb-2">Propriétaire de la campagne <span className="normal-case tracking-normal">(optionnel)</span></label>
+              <input type="text" value={owner} onChange={e => setOwner(e.target.value)}
+                placeholder="Sébastien, Samuel..."
                 className="w-full px-4 py-3 rounded-xl border border-border bg-white text-charcoal text-base focus:outline-none focus:border-accent transition-colors placeholder:text-muted/40" />
             </div>
 
