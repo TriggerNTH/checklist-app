@@ -9,6 +9,7 @@ export default function EditChecklist({ checklist }) {
   const [title, setTitle] = useState(checklist.title)
   const [slug, setSlug] = useState(checklist.slug)
   const [description, setDescription] = useState(checklist.description || '')
+  const [owner, setOwner] = useState(checklist.owner || '')
   const [items, setItems] = useState(checklist.items?.map(i => i.label || i) || [''])
   const [newFile, setNewFile] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -37,7 +38,7 @@ export default function EditChecklist({ checklist }) {
     setSaving(true)
     setError('')
 
-    const body = { title, slug, description }
+    const body = { title, slug, description, owner }
 
     if (isHtml) {
       if (newFile) {
@@ -100,6 +101,13 @@ export default function EditChecklist({ checklist }) {
                 </label>
               </div>
             )}
+
+            <div>
+              <label className="block text-xs uppercase tracking-widest text-muted mb-2">Propriétaire de la campagne <span className="normal-case tracking-normal">(optionnel)</span></label>
+              <input type="text" value={owner} onChange={e => setOwner(e.target.value)}
+                placeholder="Sébastien, Samuel..."
+                className="w-full px-4 py-3 rounded-xl border border-border bg-white text-charcoal text-base focus:outline-none focus:border-accent transition-colors placeholder:text-muted/40" />
+            </div>
 
             {/* Checklist : items */}
             {!isHtml && (
