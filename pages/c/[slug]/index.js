@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { supabase } from '../../../lib/supabase'
 import Head from 'next/head'
 
 function injectTrackingScript(html) {
@@ -181,7 +180,6 @@ export async function getServerSideProps({ params, query }) {
   let initialChecks = []
 
   if (query.s) {
-    const { createClient } = require('@supabase/supabase-js')
     const adminClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
     const { data: session } = await adminClient
       .from('checklist_sessions')
