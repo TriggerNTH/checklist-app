@@ -168,6 +168,9 @@ export default function SlugPage({ checklist, notFound, sessionId, initialChecks
 }
 
 export async function getServerSideProps({ params, query }) {
+  const { createClient } = require('@supabase/supabase-js')
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
   const { data: checklist } = await supabase
     .from('checklists')
     .select('*')
