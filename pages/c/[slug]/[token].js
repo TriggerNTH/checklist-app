@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { supabase } from '../../../lib/supabase'
 import Head from 'next/head'
 
 function injectTrackingScript(html) {
@@ -169,11 +168,7 @@ export default function TokenPage({ checklist, notFound, sessionId, initialCheck
 }
 
 export async function getServerSideProps({ params }) {
-  const { createClient } = require('@supabase/supabase-js')
-  const adminClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  )
+  const { supabaseAdmin: adminClient } = await import('../../../lib/supabase-admin')
 
   const { data: checklist } = await adminClient
     .from('checklists')
@@ -186,7 +181,7 @@ export async function getServerSideProps({ params }) {
   const { data: session } = await adminClient
     .from('checklist_sessions')
     .select('id')
-    .eq('token', params.token)
+    .eq('creator_slug', params.token)
     .eq('checklist_id', checklist.id)
     .single()
 
