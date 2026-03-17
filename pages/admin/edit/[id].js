@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Head from 'next/head'
-import { supabaseAdmin } from '../../../lib/supabase'
+import { supabaseAdmin } from '../../../lib/supabase-admin'
 
 export default function EditChecklist({ checklist }) {
   const router = useRouter()
