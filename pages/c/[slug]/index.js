@@ -181,11 +181,7 @@ export async function getServerSideProps({ params, query }) {
   let initialChecks = []
 
   if (query.s) {
-    const { createClient } = require('@supabase/supabase-js')
-    const adminClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
+    const { supabaseAdmin: adminClient } = await import('../../../lib/supabase-admin')
     const { data: session } = await adminClient
       .from('checklist_sessions')
       .select('id')
