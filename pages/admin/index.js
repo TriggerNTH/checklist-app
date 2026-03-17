@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Head from 'next/head'
-import { supabaseAdmin } from '../../lib/supabase'
+import { supabaseAdmin } from '../../lib/supabase-admin'
 
 // Modal pour inviter un créateur
 function InviteModal({ checklist, baseUrl, onClose }) {
@@ -22,7 +22,7 @@ function InviteModal({ checklist, baseUrl, onClose }) {
     })
     const data = await res.json()
     if (res.ok) {
-      setResult({ ...data, link: `${baseUrl}/c/${checklist.slug}/${data.token}` })
+      setResult({ ...data, link: `${baseUrl}/c/${checklist.slug}/${data.creator_slug}` })
     }
     setLoading(false)
   }
@@ -106,7 +106,7 @@ function SessionRow({ session, itemCount }) {
         <span className="text-xs text-muted w-8 text-right">{progress}%</span>
       </div>
       <span className="text-xs text-muted/50 w-10 text-right flex-shrink-0">{date}</span>
-      <a href={`/c/${session.checklist_slug}/${session.token}`} target="_blank"
+      <a href={`/c/${session.checklist_slug}/${session.creator_slug}`} target="_blank"
         className="text-muted hover:text-blue-500 transition-colors flex-shrink-0" title="Voir la checklist du créateur">
         <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
       </a>
