@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '../../../lib/supabase'
+import { supabaseAdmin } from '../../../lib/supabase-admin'
 
 function isAdmin(req) {
   return req.cookies['admin_session'] === process.env.ADMIN_PASSWORD
