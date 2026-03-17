@@ -168,7 +168,8 @@ export default function TokenPage({ checklist, notFound, sessionId, initialCheck
 }
 
 export async function getServerSideProps({ params }) {
-  const { supabaseAdmin: adminClient } = await import('../../../lib/supabase-admin')
+  const { createClient } = require('@supabase/supabase-js')
+  const adminClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 
   const { data: checklist } = await adminClient
     .from('checklists')
