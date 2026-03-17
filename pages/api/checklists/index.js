@@ -1,12 +1,11 @@
 // v2
+import { supabaseAdmin } from '../../../lib/supabase'
 
 function isAdmin(req) {
   return req.cookies['admin_session'] === process.env.ADMIN_PASSWORD
 }
 
 export default async function handler(req, res) {
-  const { createClient } = require('@supabase/supabase-js')
-  const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
   if (!isAdmin(req)) return res.status(401).json({ error: 'Unauthorized' })
 
   if (req.method === 'POST') {
