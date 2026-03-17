@@ -91,7 +91,9 @@ function InviteModal({ checklist, baseUrl, onClose }) {
 
 // Ligne de session dans le dashboard
 function SessionRow({ session, itemCount }) {
-  const progress = itemCount > 0 ? Math.round((session.checkedCount / itemCount) * 100) : 0
+  // Pour les HTML, itemCount = 0 — on utilise le nombre de cases connues dans les checks
+  const totalItems = itemCount > 0 ? itemCount : (session.checks?.length || 0)
+  const progress = totalItems > 0 ? Math.round((session.checkedCount / totalItems) * 100) : 0
   const date = new Date(session.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
   return (
     <div className="flex items-center gap-3 py-1.5">
