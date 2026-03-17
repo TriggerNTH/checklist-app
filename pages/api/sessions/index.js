@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
     const { data: sessions, error } = await supabaseAdmin
       .from('checklist_sessions')
-      .select('id, token, creator_name, created_at, checklist_id')
+      .select('id, token, creator_name, created_at, checklist_id, checklists(slug)')
       .eq('checklist_id', checklist_id)
       .order('created_at', { ascending: false })
 
