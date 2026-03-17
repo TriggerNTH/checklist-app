@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '../../../lib/supabase'
+import { supabaseAdmin } from '../../../lib/supabase-admin'
 
 function isAdmin(req) {
   return req.cookies['admin_session'] === process.env.ADMIN_PASSWORD
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
     const { data: sessions, error } = await supabaseAdmin
       .from('checklist_sessions')
-      .select('id, token, creator_name, created_at, checklist_id, checklists(slug)')
+      .select('id, token, creator_name, creator_slug, created_at, checklist_id, checklists(slug)')
       .eq('checklist_id', checklist_id)
       .order('created_at', { ascending: false })
 
@@ -45,9 +45,30 @@ export default async function handler(req, res) {
     const { checklist_id, creator_name } = req.body
     if (!checklist_id || !creator_name) return res.status(400).json({ error: 'Champs manquants' })
 
+    // Générer un slug propre depuis le nom
+    function slugify(str) {
+      return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+    }
+
+    // Gérer les doublons : jean, jean-2, jean-3...
+    let baseSlug = slugify(creator_name)
+    let creator_slug = baseSlug
+    let attempt = 1
+    while (true) {
+      const { data: existing } = await supabaseAdmin
+        .from('checklist_sessions')
+        .select('id')
+        .eq('checklist_id', checklist_id)
+        .eq('creator_slug', creator_slug)
+        .single()
+      if (!existing) break
+      attempt++
+      creator_slug = `${baseSlug}-${attempt}`
+    }
+
     const { data, error } = await supabaseAdmin
       .from('checklist_sessions')
-      .insert([{ checklist_id, creator_name }])
+      .insert([{ checklist_id, creator_name, creator_slug }])
       .select()
       .single()
 
