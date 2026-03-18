@@ -91,9 +91,8 @@ function InviteModal({ checklist, baseUrl, onClose }) {
 
 // Ligne de session dans le dashboard
 function SessionRow({ session, itemCount }) {
-  // Pour les HTML, itemCount = 0 — on utilise le nombre de cases connues dans les checks
-  const totalItems = itemCount > 0 ? itemCount : (session.checks?.length || 0)
-  const progress = totalItems > 0 ? Math.round((session.checkedCount / totalItems) * 100) : 0
+  const isHtml = itemCount === 0
+  const progress = !isHtml && itemCount > 0 ? Math.round((session.checkedCount / itemCount) * 100) : 0
   const date = new Date(session.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
   return (
     <div className="flex items-center gap-3 py-1.5">
@@ -102,10 +101,16 @@ function SessionRow({ session, itemCount }) {
       </div>
       <span className="text-xs text-charcoal flex-1 truncate">{session.creator_name}</span>
       <div className="flex items-center gap-2">
-        <div className="w-16 h-1 rounded-full bg-gray-100 overflow-hidden">
-          <div style={{ width: progress + '%', height: '100%', background: progress === 100 ? '#16a34a' : '#C97D2E' }} />
-        </div>
-        <span className="text-xs text-muted w-8 text-right">{progress}%</span>
+        {isHtml ? (
+          <span className="text-xs text-muted">{session.checkedCount} coché{session.checkedCount > 1 ? 's' : ''}</span>
+        ) : (
+          <>
+            <div className="w-16 h-1 rounded-full bg-gray-100 overflow-hidden">
+              <div style={{ width: progress + '%', height: '100%', background: progress === 100 ? '#16a34a' : '#C97D2E' }} />
+            </div>
+            <span className="text-xs text-muted w-8 text-right">{progress}%</span>
+          </>
+        )}
       </div>
       <span className="text-xs text-muted/50 w-10 text-right flex-shrink-0">{date}</span>
       <a href={`/c/${session.checklist_slug}/${session.creator_slug}`} target="_blank"
