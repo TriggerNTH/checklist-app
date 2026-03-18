@@ -6,6 +6,7 @@ function injectTrackingScript(html) {
 (function() {
   function syncChecks() {
     var boxes = document.querySelectorAll('input[type="checkbox"]');
+    window.parent.postMessage({ type: 'TOTAL_ITEMS', total: boxes.length }, '*');
     boxes.forEach(function(box, idx) {
       box.addEventListener('change', function() {
         window.parent.postMessage({ type: 'CHECK_CHANGE', itemKey: String(idx), isChecked: box.checked }, '*');
@@ -30,6 +31,14 @@ function HtmlPage({ checklist, sessionId, initialChecks }) {
   useEffect(() => {
     if (!sessionId) return
     function handleMessage(e) {
+      if (e.data?.type === 'TOTAL_ITEMS') {
+        fetch('/api/sessions/total', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId, total_items: e.data.total })
+        })
+        return
+      }
       if (e.data?.type !== 'CHECK_CHANGE') return
       fetch('/api/checks', {
         method: 'POST',
