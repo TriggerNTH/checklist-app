@@ -92,7 +92,8 @@ function InviteModal({ checklist, baseUrl, onClose }) {
 // Ligne de session dans le dashboard
 function SessionRow({ session, itemCount }) {
   const isHtml = itemCount === 0
-  const progress = !isHtml && itemCount > 0 ? Math.round((session.checkedCount / itemCount) * 100) : 0
+  const totalItems = isHtml ? (session.total_items || 0) : itemCount
+  const progress = totalItems > 0 ? Math.round((session.checkedCount / totalItems) * 100) : 0
   const date = new Date(session.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
   return (
     <div className="flex items-center gap-3 py-1.5">
@@ -101,14 +102,14 @@ function SessionRow({ session, itemCount }) {
       </div>
       <span className="text-xs text-charcoal flex-1 truncate">{session.creator_name}</span>
       <div className="flex items-center gap-2">
-        {isHtml ? (
+        {isHtml && !session.total_items ? (
           <span className="text-xs text-muted">{session.checkedCount} coché{session.checkedCount > 1 ? 's' : ''}</span>
         ) : (
           <>
             <div className="w-16 h-1 rounded-full bg-gray-100 overflow-hidden">
               <div style={{ width: progress + '%', height: '100%', background: progress === 100 ? '#16a34a' : '#C97D2E' }} />
             </div>
-            <span className="text-xs text-muted w-8 text-right">{progress}%</span>
+            <span className="text-xs text-muted w-8 text-right">{session.checkedCount}/{totalItems}</span>
           </>
         )}
       </div>
